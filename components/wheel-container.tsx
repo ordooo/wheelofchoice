@@ -12,12 +12,11 @@ import { useMobile } from "@/hooks/use-mobile"
 import { presets } from "@/lib/presets"
 import { generateColors } from "@/lib/colors"
 import confetti from "canvas-confetti"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import { Volume2, VolumeX } from "lucide-react"
 
 export function WheelContainer() {
   const searchParams = useSearchParams()
-  const router = useRouter()
 
   const [options, setOptions] = useState<string[]>([])
   const [colors, setColors] = useState<string[]>([])
@@ -29,8 +28,9 @@ export function WheelContainer() {
   const confettiCanvasRef = useRef<HTMLCanvasElement>(null)
   const isMobile = useMobile()
   const initializedRef = useRef(false)
-  const [selectedWinningIndex, setSelectedWinningIndex] = useState<number>(-1)
-  const spinAnimationRef = useRef<NodeJS.Timeout | null>(null)
+  const [winningIndex, setWinningIndex] = useState<number>(-1)
+  const spinTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const currentWinningIndexRef = useRef<number>(-1)
 
   const { playTickSound, updateTickRate, stopTickSound, playWinSound } = useAudio(soundEnabled)
 
@@ -73,11 +73,11 @@ export function WheelContainer() {
     }
   }, [options, colorTheme])
 
-  // Clean up any intervals on unmount
+  // Clean up any timeouts on unmount
   useEffect(() => {
     return () => {
-      if (spinAnimationRef.current) {
-        clearTimeout(spinAnimationRef.current)
+      if (spinTimeoutRef.current) {
+        clearTimeout(spinTimeoutRef.current)
       }
     }
   }, [])
@@ -85,13 +85,14 @@ export function WheelContainer() {
   const handleSpin = () => {
     if (isSpinning || options.length === 0) return
 
-    // Step 1: Pick the winning slice index randomly BEFORE spinning
-    const winningIndex = Math.floor(Math.random() * options.length)
+    // Pick a random winning index
+    const randomIndex = Math.floor(Math.random() * options.length)
 
-    // Store the selected winning index
-    setSelectedWinningIndex(winningIndex)
+    // Store the winning index in both state and ref
+    setWinningIndex(randomIndex)
+    currentWinningIndexRef.current = randomIndex
 
-    // Start the spin animation
+    // Start spinning
     setIsSpinning(true)
     setResult(null)
 
@@ -117,19 +118,19 @@ export function WheelContainer() {
       }, update.time)
     })
 
-    // Random spin duration between 4 and 5 seconds
+    // Set the spin duration (4-5 seconds)
     const spinDuration = 4000 + Math.random() * 1000
 
     // Schedule the end of the spin
-    spinAnimationRef.current = setTimeout(() => {
+    spinTimeoutRef.current = setTimeout(() => {
       // Stop the ticking sound
       stopTickSound()
 
       // End the spinning state
       setIsSpinning(false)
 
-      // Set the result based on the pre-selected winning index
-      setResult(options[winningIndex])
+      // Set the result based on the winning index
+      setResult(options[randomIndex])
 
       // Play the winning sound
       if (soundEnabled) {
@@ -148,13 +149,18 @@ export function WheelContainer() {
 
       // Remove the selected option if enabled
       if (removeAfterSpin && options.length > 1) {
-        setOptions((prevOptions) => prevOptions.filter((_, index) => index !== winningIndex))
-        // Reset winning index after removing the option
-        setSelectedWinningIndex(-1)
+        const winIndex = currentWinningIndexRef.current
+        setOptions((prevOptions) => {
+          const newOptions = prevOptions.filter((_, index) => index !== winIndex)
+          // Reset winning index after removing the option
+          setWinningIndex(-1)
+          currentWinningIndexRef.current = -1
+          return newOptions
+        })
       }
 
       // Clear the timeout reference
-      spinAnimationRef.current = null
+      spinTimeoutRef.current = null
     }, spinDuration)
   }
 
@@ -163,13 +169,15 @@ export function WheelContainer() {
     const limitedOptions = newOptions.slice(0, 30)
     setOptions(limitedOptions)
     setResult(null)
-    setSelectedWinningIndex(-1)
+    setWinningIndex(-1)
+    currentWinningIndexRef.current = -1
   }
 
   const handlePresetChange = useCallback((presetKey: string) => {
     setOptions(presets[presetKey])
     setResult(null)
-    setSelectedWinningIndex(-1)
+    setWinningIndex(-1)
+    currentWinningIndexRef.current = -1
 
     // Update URL with preset parameter
     if (typeof window !== "undefined") {
@@ -245,12 +253,7 @@ export function WheelContainer() {
             </div>
           )}
 
-          <Wheel
-            options={options}
-            colors={colors}
-            isSpinning={isSpinning}
-            winningIndex={isSpinning ? selectedWinningIndex : result ? options.indexOf(result) : -1}
-          />
+          <Wheel options={options} colors={colors} isSpinning={isSpinning} winningIndex={winningIndex} />
 
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2">
             <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[20px] border-l-transparent border-r-transparent border-t-yellow-500" />

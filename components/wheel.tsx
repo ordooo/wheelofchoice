@@ -11,42 +11,129 @@ interface WheelProps {
 
 // Helper functions for text rendering
 function prepareText(text: string, radius: number, totalOptions: number): string {
-  // Calculate maximum characters based on radius and number of options
-  const maxLength = Math.min(
-    Math.floor(radius / 7), // Base on radius
-    Math.max(10, 35 - totalOptions), // Reduce max length as options increase, but keep more characters
-  )
-
+  const maxLength = Math.min(Math.floor(radius / 7), Math.max(10, 35 - totalOptions))
   if (text.length <= maxLength) return text
-
-  // Truncate and add ellipsis
   return text.substring(0, maxLength - 1) + "…"
 }
 
 function calculateFontSize(text: string, totalOptions: number, radius: number): number {
-  // Significantly increased base size for better readability
   const baseSize = Math.min(24, Math.max(14, radius / 10))
-
-  // Adjust based on number of options, but maintain larger minimum
   const optionsFactor = Math.max(0.65, 1 - totalOptions / 60)
-
-  // Adjust based on text length, but maintain larger minimum
   const lengthFactor = Math.max(0.8, 1 - text.length / 40)
-
   return Math.floor(baseSize * optionsFactor * lengthFactor)
 }
 
 export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rotationRef = useRef(0)
+  const animationRef = useRef<number | null>(null)
+  const winnerGlowRef = useRef(0)
+  const winnerGlowIncreasing = useRef(true)
+  const spinningRef = useRef(false)
   const targetRotationRef = useRef(0)
-  const animationFrameRef = useRef<number | null>(null)
-  const winnerGlowRef = useRef(0) // For winner glow animation
-  const winnerGlowIncreasing = useRef(true) // Direction of glow animation
-  const spinStartedRef = useRef(false) // Track if spin has started
+  const finalRotationRef = useRef(0)
 
-  // Draw the wheel on canvas
+  // Handle the wheel spinning animation
   useEffect(() => {
+    // Start spinning when isSpinning becomes true
+    if (isSpinning && !spinningRef.current && winningIndex >= 0) {
+      spinningRef.current = true
+
+      // Calculate the final rotation to align the winning slice with the pointer
+      const sliceAngle = (2 * Math.PI) / options.length
+
+      // The pointer is at the top (270 degrees or 3π/2)
+      const pointerAngle = (3 * Math.PI) / 2
+
+      // Calculate the center of the winning slice
+      const winningSliceCenter = winningIndex * sliceAngle + sliceAngle / 2
+
+      // Calculate the rotation needed to align the winning slice with the pointer
+      // We need to rotate so that winningSliceCenter + rotation = pointerAngle
+      let targetRotation = pointerAngle - winningSliceCenter
+
+      // Normalize to positive angle
+      while (targetRotation < 0) targetRotation += 2 * Math.PI
+
+      // Add extra rotations (5-7 full rotations)
+      targetRotation += 2 * Math.PI * (5 + Math.random() * 2)
+
+      // Starting rotation and duration
+      const startRotation = rotationRef.current
+      finalRotationRef.current = startRotation + targetRotation
+      targetRotationRef.current = targetRotation
+      const duration = 4000 + Math.random() * 1000
+      const startTime = performance.now()
+
+      // Animation function
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime
+        const progress = Math.min(elapsed / duration, 1)
+
+        // Easing function for realistic deceleration
+        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
+
+        // Calculate current rotation
+        rotationRef.current = startRotation + targetRotation * easeOut(progress)
+
+        // Continue animation if not complete
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(animate)
+        } else {
+          // Ensure we end at exactly the target rotation
+          rotationRef.current = finalRotationRef.current
+
+          // Force a final redraw to ensure perfect alignment
+          drawWheel()
+
+          animationRef.current = null
+        }
+
+        // Redraw the wheel
+        drawWheel()
+      }
+
+      // Start the animation
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+      animationRef.current = requestAnimationFrame(animate)
+    }
+    // Reset when spinning stops
+    else if (!isSpinning && spinningRef.current) {
+      spinningRef.current = false
+
+      // When spinning stops, ensure the wheel is at the correct final position
+      if (winningIndex >= 0) {
+        // Calculate the exact position for perfect alignment
+        const sliceAngle = (2 * Math.PI) / options.length
+        const pointerAngle = (3 * Math.PI) / 2
+        const winningSliceCenter = winningIndex * sliceAngle + sliceAngle / 2
+
+        // Calculate the exact rotation needed
+        let exactRotation = pointerAngle - winningSliceCenter
+
+        // Normalize to positive angle
+        while (exactRotation < 0) exactRotation += 2 * Math.PI
+
+        // Adjust the rotation to ensure perfect alignment
+        rotationRef.current = exactRotation
+
+        // Force a redraw with the exact alignment
+        drawWheel()
+      }
+    }
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+        animationRef.current = null
+      }
+    }
+  }, [isSpinning, winningIndex, options.length])
+
+  // Function to draw the wheel
+  const drawWheel = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
@@ -238,113 +325,49 @@ export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps)
       }
     }
 
+    // Draw a line from center to top to visualize the pointer position (for debugging)
+    if (!isSpinning && winningIndex >= 0) {
+      ctx.save()
+      ctx.beginPath()
+      ctx.moveTo(centerX, centerY)
+      ctx.lineTo(centerX, centerY - radius - 10)
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.5)"
+      ctx.lineWidth = 1
+      ctx.stroke()
+      ctx.restore()
+    }
+  }
+
+  // Draw the wheel initially and when props change
+  useEffect(() => {
+    drawWheel()
+
     // Animate the winner glow when not spinning
     if (winningIndex !== -1 && !isSpinning) {
-      if (winnerGlowIncreasing.current) {
-        winnerGlowRef.current += 0.1
-        if (winnerGlowRef.current > 3) {
-          winnerGlowIncreasing.current = false
-        }
-      } else {
-        winnerGlowRef.current -= 0.1
-        if (winnerGlowRef.current < 0) {
-          winnerGlowIncreasing.current = true
-        }
-      }
-
-      // Request animation frame to continue the glow effect
-      requestAnimationFrame(() => {
-        // This will trigger a re-render with the updated glow value
-        if (canvasRef.current) {
-          const ctx = canvasRef.current.getContext("2d")
-          if (ctx) {
-            // Force a redraw
-            ctx.clearRect(0, 0, 1, 1)
+      const animateGlow = () => {
+        if (winnerGlowIncreasing.current) {
+          winnerGlowRef.current += 0.1
+          if (winnerGlowRef.current > 3) {
+            winnerGlowIncreasing.current = false
+          }
+        } else {
+          winnerGlowRef.current -= 0.1
+          if (winnerGlowRef.current < 0) {
+            winnerGlowIncreasing.current = true
           }
         }
-      })
-    }
-  }, [options, colors, rotationRef.current, isSpinning, winningIndex, winnerGlowRef.current])
 
-  // Handle spinning animation with perfect alignment
-  useEffect(() => {
-    // Only start a new spin if isSpinning changes from false to true
-    if (isSpinning && !spinStartedRef.current && winningIndex >= 0 && options.length > 0) {
-      spinStartedRef.current = true
-
-      // Reset winner glow animation
-      winnerGlowRef.current = 0
-
-      // Calculate the angle that centers the winning slice directly under the top triangle
-      const sliceAngle = (2 * Math.PI) / options.length
-
-      // In canvas coordinates, 0 is at 3 o'clock, and we want the top (12 o'clock) which is at -π/2 or 3π/2
-      // This is the position of the triangle pointer
-      const pointerPosition = (3 * Math.PI) / 2 // 270 degrees, which is the top position (12 o'clock)
-
-      // Calculate the current position of the center of the winning slice
-      const winningSliceCenter = winningIndex * sliceAngle + sliceAngle / 2
-
-      // Calculate how much we need to rotate to align the winning slice with the pointer
-      // We need to rotate so that winningSliceCenter + rotation = pointerPosition
-      let requiredRotation = pointerPosition - winningSliceCenter
-
-      // Normalize the rotation to be between 0 and 2π
-      while (requiredRotation < 0) {
-        requiredRotation += 2 * Math.PI
+        drawWheel()
+        return requestAnimationFrame(animateGlow)
       }
 
-      // Add extra full spins (e.g., 5 full spins = 10π radians) for animation
-      const extraRotations = 5 + Math.random() * 2 // 5-7 full rotations
-      requiredRotation += 2 * Math.PI * extraRotations
+      const glowAnimation = animateGlow()
 
-      // Set the target rotation
-      const startRotation = rotationRef.current
-      targetRotationRef.current = startRotation + requiredRotation
-
-      // Spin the wheel to that precise angle using a smooth animation
-      // Match the duration to the sound effect timing (4-5 seconds)
-      const startTime = performance.now()
-      const duration = 4000 + Math.random() * 1000 // 4-5 seconds
-
-      const animate = (currentTime: number) => {
-        const elapsed = currentTime - startTime
-        const progress = Math.min(elapsed / duration, 1)
-
-        // Easing function for a more realistic spin (fast start, slow end)
-        // This is a cubic ease-out function
-        const easeOut = (t: number) => 1 - Math.pow(1 - t, 3)
-
-        // Calculate current rotation based on progress
-        rotationRef.current = startRotation + requiredRotation * easeOut(progress)
-
-        if (progress < 1) {
-          // Continue animation
-          animationFrameRef.current = requestAnimationFrame(animate)
-        } else {
-          // Ensure we end at exactly the target rotation
-          rotationRef.current = targetRotationRef.current
-          animationFrameRef.current = null
-        }
-      }
-
-      // Start the animation
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-      animationFrameRef.current = requestAnimationFrame(animate)
-    } else if (!isSpinning) {
-      // Reset the spin started flag when spinning stops
-      spinStartedRef.current = false
-    }
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-        animationFrameRef.current = null
+      return () => {
+        cancelAnimationFrame(glowAnimation)
       }
     }
-  }, [isSpinning, winningIndex, options.length])
+  }, [options, colors, isSpinning, winningIndex])
 
   return (
     <div className="relative">

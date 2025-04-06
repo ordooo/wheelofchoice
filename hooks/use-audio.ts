@@ -6,24 +6,20 @@ export function useAudio(enabled = true) {
   const tickSoundRef = useRef<HTMLAudioElement | null>(null)
   const winSoundRef = useRef<HTMLAudioElement | null>(null)
   const tickIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const tickRateRef = useRef<number>(100) // Initial tick rate in ms
 
   // Initialize audio elements
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Preload audio files
       tickSoundRef.current = new Audio("/sounds/tick.mp3")
       winSoundRef.current = new Audio("/sounds/win.mp3")
 
       // Configure audio
       if (tickSoundRef.current) {
         tickSoundRef.current.volume = 0.5
-        tickSoundRef.current.preload = "auto"
       }
 
       if (winSoundRef.current) {
         winSoundRef.current.volume = 0.7
-        winSoundRef.current.preload = "auto"
       }
     }
 
@@ -33,16 +29,13 @@ export function useAudio(enabled = true) {
   }, [])
 
   const playTickSound = useCallback(
-    (initialSpeed = 100) => {
+    (initialRate = 100) => {
       if (!enabled || !tickSoundRef.current) return
 
       // Clear any existing interval
       if (tickIntervalRef.current) {
         clearInterval(tickIntervalRef.current)
       }
-
-      // Set initial tick rate
-      tickRateRef.current = initialSpeed
 
       // Play tick sound repeatedly
       const playTick = () => {
@@ -58,7 +51,7 @@ export function useAudio(enabled = true) {
       playTick()
 
       // Set up interval for repeated playing
-      tickIntervalRef.current = setInterval(playTick, tickRateRef.current)
+      tickIntervalRef.current = setInterval(playTick, initialRate)
     },
     [enabled],
   )
@@ -66,9 +59,6 @@ export function useAudio(enabled = true) {
   const updateTickRate = useCallback(
     (newRate: number) => {
       if (!enabled || !tickIntervalRef.current) return
-
-      // Update the tick rate
-      tickRateRef.current = newRate
 
       // Clear existing interval and create a new one with the updated rate
       clearInterval(tickIntervalRef.current)
@@ -82,7 +72,7 @@ export function useAudio(enabled = true) {
         }
       }
 
-      tickIntervalRef.current = setInterval(playTick, tickRateRef.current)
+      tickIntervalRef.current = setInterval(playTick, newRate)
     },
     [enabled],
   )
