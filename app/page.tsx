@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import { WheelContainer } from "@/components/wheel-container"
 import Image from "next/image"
+import { SeoContentSection } from "@/components/seo-content-section"
 
 export default function Home() {
   return (
@@ -8,7 +9,14 @@ export default function Home() {
       <div className="max-w-5xl mx-auto">
         <header className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Image src="/logo.png" alt="Wheel of Choice Logo" width={80} height={80} className="h-20 w-auto" priority />
+            <Image
+              src="/logo.png"
+              alt="Wheel of Choice Logo - Random Decision Spinner"
+              width={80}
+              height={80}
+              className="h-20 w-auto"
+              priority
+            />
           </div>
           <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-yellow-500 mb-2">
             Wheel of Choice 🎡
@@ -23,6 +31,9 @@ export default function Home() {
         <Suspense fallback={<WheelContainerSkeleton />}>
           <WheelContainer />
         </Suspense>
+
+        {/* SEO Content Section */}
+        <SeoContentSection />
 
         <footer className="mt-16 text-center text-gray-500 text-sm">
           <p>

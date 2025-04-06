@@ -203,6 +203,7 @@ export function WheelContainer() {
         ref={confettiCanvasRef}
         className="fixed inset-0 pointer-events-none z-50"
         style={{ width: "100%", height: "100%" }}
+        aria-hidden="true"
       />
 
       <div className="w-full lg:w-1/2 flex flex-col gap-6">
@@ -214,7 +215,7 @@ export function WheelContainer() {
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
               aria-label={soundEnabled ? "Mute sound effects" : "Enable sound effects"}
             >
-              {soundEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+              {soundEnabled ? <Volume2 size={20} aria-hidden="true" /> : <VolumeX size={20} aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -255,7 +256,7 @@ export function WheelContainer() {
 
           <Wheel options={options} colors={colors} isSpinning={isSpinning} winningIndex={winningIndex} />
 
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2" aria-hidden="true">
             <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[20px] border-l-transparent border-r-transparent border-t-yellow-500" />
           </div>
         </div>

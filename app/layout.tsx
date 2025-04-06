@@ -6,17 +6,17 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Wheel of Choice | Interactive Decision-Making Spinner Tool",
+  title: "Random Picker Wheel | Spin the Wheel to Decide",
   description:
-    "Wheel of Choice is an interactive spinner tool designed to help you make quick and fair decisions. Ideal for educators, teams, and party games.",
+    "Use our free random picker wheel to make decisions quickly and fairly. Enter your options, spin the wheel, and let chance decide!",
   metadataBase: new URL("https://wheelofchoice.io"),
   alternates: {
     canonical: "/",
   },
   openGraph: {
-    title: "Wheel of Choice | Interactive Decision-Making Spinner Tool",
+    title: "Random Picker Wheel | Spin the Wheel to Decide",
     description:
-      "Wheel of Choice is an interactive spinner tool designed to help you make quick and fair decisions. Ideal for educators, teams, and party games.",
+      "Use our free random picker wheel to make decisions quickly and fairly. Enter your options, spin the wheel, and let chance decide!",
     url: "https://wheelofchoice.io",
     siteName: "Wheel of Choice",
     images: [
@@ -32,9 +32,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wheel of Choice | Interactive Decision-Making Spinner Tool",
+    title: "Random Picker Wheel | Spin the Wheel to Decide",
     description:
-      "Wheel of Choice is an interactive spinner tool designed to help you make quick and fair decisions. Ideal for educators, teams, and party games.",
+      "Use our free random picker wheel to make decisions quickly and fairly. Enter your options, spin the wheel, and let chance decide!",
     images: ["https://wheelofchoice.io/og-image.png"],
     creator: "@wheelofchoice",
   },
@@ -47,7 +47,6 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-touch-icon.png" }],
   },
-    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -60,12 +59,35 @@ export default function RootLayout({
       <head>
         <link rel="canonical" href="https://wheelofchoice.io" />
         <link rel="manifest" href="/manifest.json" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              name: "Wheel of Choice",
+              url: "https://wheelofchoice.io",
+              description:
+                "An interactive random picker wheel for making decisions quickly and fairly. Enter your options, spin the wheel, and let chance decide!",
+              applicationCategory: "UtilityApplication",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "USD",
+              },
+              screenshot: {
+                "@type": "ImageObject",
+                url: "https://wheelofchoice.io/og-image.png",
+                width: "1200",
+                height: "630",
+              },
+            }),
+          }}
+        />
       </head>
       <body className={inter.className}>{children}</body>
     </html>
   )
 }
 
-
-
-import './globals.css'

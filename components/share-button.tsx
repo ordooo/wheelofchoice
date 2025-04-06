@@ -57,9 +57,9 @@ export function ShareButton({ options, result }: ShareButtonProps) {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        aria-label="Share this wheel"
+        aria-label="Share this wheel result"
       >
-        <Share2 size={18} />
+        <Share2 size={18} aria-hidden="true" />
         <span>Share this result</span>
       </button>
 
@@ -73,32 +73,40 @@ export function ShareButton({ options, result }: ShareButtonProps) {
           <button
             onClick={copyToClipboard}
             className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+            aria-label="Copy link to clipboard"
           >
-            {copied ? <Check size={18} className="text-green-500" /> : <Copy size={18} />}
+            {copied ? (
+              <Check size={18} className="text-green-500" aria-hidden="true" />
+            ) : (
+              <Copy size={18} aria-hidden="true" />
+            )}
             <span>{copied ? "Copied!" : "Copy link"}</span>
           </button>
 
           <button
             onClick={shareToFacebook}
             className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+            aria-label="Share to Facebook"
           >
-            <Facebook size={18} className="text-blue-600" />
+            <Facebook size={18} className="text-blue-600" aria-hidden="true" />
             <span>Share to Facebook</span>
           </button>
 
           <button
             onClick={shareToTwitter}
             className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+            aria-label="Share to Twitter"
           >
-            <Twitter size={18} className="text-blue-400" />
+            <Twitter size={18} className="text-blue-400" aria-hidden="true" />
             <span>Share to Twitter</span>
           </button>
 
           <button
             onClick={shareToWhatsApp}
             className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-100 transition-colors"
+            aria-label="Share to WhatsApp"
           >
-            <Send size={18} className="text-green-500" />
+            <Send size={18} className="text-green-500" aria-hidden="true" />
             <span>Share to WhatsApp</span>
           </button>
         </div>
