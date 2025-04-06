@@ -11,6 +11,7 @@ import { useAudio } from "@/hooks/use-audio"
 import { useMobile } from "@/hooks/use-mobile"
 import { presets } from "@/lib/presets"
 import { generateColors } from "@/lib/colors"
+import confetti from "canvas-confetti"
 import { useSearchParams } from "next/navigation"
 import { Volume2, VolumeX } from "lucide-react"
 
