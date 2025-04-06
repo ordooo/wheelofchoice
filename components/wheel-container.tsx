@@ -32,6 +32,7 @@ export function WheelContainer() {
   const spinTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const currentWinningIndexRef = useRef<number>(-1)
 
+
   const { playTickSound, updateTickRate, stopTickSound, playWinSound } = useAudio(soundEnabled)
 
   // Initialize options from URL params or default preset
@@ -87,11 +88,16 @@ export function WheelContainer() {
 
     // Pick a random winning index
     const randomIndex = Math.floor(Math.random() * options.length)
+<<<<<<< HEAD
 
     // Store the winning index in both state and ref
     setWinningIndex(randomIndex)
     currentWinningIndexRef.current = randomIndex
 
+=======
+    setWinningIndex(randomIndex)
+
+>>>>>>> f0356d9 (Updated code and configuration)
     // Start spinning
     setIsSpinning(true)
     setResult(null)
@@ -149,6 +155,7 @@ export function WheelContainer() {
 
       // Remove the selected option if enabled
       if (removeAfterSpin && options.length > 1) {
+<<<<<<< HEAD
         const winIndex = currentWinningIndexRef.current
         setOptions((prevOptions) => {
           const newOptions = prevOptions.filter((_, index) => index !== winIndex)
@@ -157,6 +164,9 @@ export function WheelContainer() {
           currentWinningIndexRef.current = -1
           return newOptions
         })
+=======
+        setOptions((prevOptions) => prevOptions.filter((_, index) => index !== randomIndex))
+>>>>>>> f0356d9 (Updated code and configuration)
       }
 
       // Clear the timeout reference
@@ -170,14 +180,20 @@ export function WheelContainer() {
     setOptions(limitedOptions)
     setResult(null)
     setWinningIndex(-1)
+<<<<<<< HEAD
     currentWinningIndexRef.current = -1
+=======
+>>>>>>> f0356d9 (Updated code and configuration)
   }
 
   const handlePresetChange = useCallback((presetKey: string) => {
     setOptions(presets[presetKey])
     setResult(null)
     setWinningIndex(-1)
+<<<<<<< HEAD
     currentWinningIndexRef.current = -1
+=======
+>>>>>>> f0356d9 (Updated code and configuration)
 
     // Update URL with preset parameter
     if (typeof window !== "undefined") {

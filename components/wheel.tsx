@@ -1,6 +1,6 @@
 "use client"
 
-import { useRef, useEffect } from "react"
+import { useRef, useEffect, useState } from "react"
 
 interface WheelProps {
   options: string[]
@@ -32,6 +32,7 @@ export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps)
   const spinningRef = useRef(false)
   const targetRotationRef = useRef(0)
   const finalRotationRef = useRef(0)
+
 
   // Handle the wheel spinning animation
   useEffect(() => {
@@ -169,8 +170,8 @@ export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps)
     const sliceAngle = (2 * Math.PI) / options.length
 
     for (let i = 0; i < options.length; i++) {
-      const startAngle = i * sliceAngle + rotationRef.current
-      const endAngle = (i + 1) * sliceAngle + rotationRef.current
+      const startAngle = i * sliceAngle + rotation
+      const endAngle = (i + 1) * sliceAngle + rotation
 
       // Draw segment
       ctx.beginPath()
@@ -308,7 +309,7 @@ export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps)
       const markerAngle = (2 * Math.PI) / markerCount
 
       for (let i = 0; i < markerCount; i++) {
-        const angle = i * markerAngle + rotationRef.current
+        const angle = i * markerAngle + rotation
 
         ctx.save()
         ctx.translate(centerX, centerY)
@@ -356,6 +357,7 @@ export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps)
             winnerGlowIncreasing.current = true
           }
         }
+<<<<<<< HEAD
 
         drawWheel()
         return requestAnimationFrame(animateGlow)
@@ -368,6 +370,11 @@ export function Wheel({ options, colors, isSpinning, winningIndex }: WheelProps)
       }
     }
   }, [options, colors, isSpinning, winningIndex])
+=======
+      })
+    }
+  }, [options, colors, rotation, isSpinning, winningIndex, winnerGlowRef.current])
+>>>>>>> f0356d9 (Updated code and configuration)
 
   return (
     <div className="relative">
