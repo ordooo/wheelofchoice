@@ -42,6 +42,50 @@ body {
   }
 }
 
+/* Blog typography styles */
+.blog-content {
+  @apply max-w-none text-lg;
+}
+
+.blog-content h1 {
+  @apply text-3xl md:text-4xl font-bold text-gray-800 mb-6;
+}
+
+.blog-content h2 {
+  @apply text-xl md:text-2xl font-bold text-gray-800 mt-8 mb-4;
+}
+
+.blog-content p {
+  @apply text-gray-600 mb-4 leading-relaxed;
+}
+
+.blog-content a {
+  @apply text-blue-600 hover:text-blue-800 transition-colors;
+}
+
+.blog-content blockquote {
+  @apply border-l-4 border-blue-500 pl-4 italic my-6 text-gray-700;
+}
+
+.blog-content ul {
+  @apply list-disc pl-6 space-y-2 my-4 text-gray-600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .blog-content {
+    @apply text-base;
+  }
+
+  .blog-content h1 {
+    @apply text-2xl;
+  }
+
+  .blog-content h2 {
+    @apply text-xl;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
